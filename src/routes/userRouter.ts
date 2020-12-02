@@ -1,12 +1,11 @@
 import express from 'express';
 import {User} from '../User';
-import fs from 'fs';
 import path from "path";
-import {stringify} from "querystring";
+import {arrayOfPosts, Post} from "../Post";
 
 let arrayOfUsers = new Array();
 
-//arrayOfUsers.push(new User("kristoff","Chris", "Deardeuff","example@example","pass"));
+arrayOfUsers.push(new User("kristoff","Chris", "Deardeuff","example@example","pass"));
 const usersRouter = express.Router();
 
 usersRouter.get('/Users',(req,res)=>{
@@ -31,13 +30,8 @@ usersRouter.get("/User/:userID",(req,res)=>{
 });
 
 usersRouter.post('/Users',(req,res)=>{
-    let newUser = new User();
 
-    newUser.userID = req.body.userID;
-    newUser.name = req.body.name;
-    newUser.lname = req.body.lastName;
-    newUser.eAddr = req.body.email;
-    newUser.password = req.body.password;
+    let newUser = new User(req.body.userID,req.body.name,req.body.lastName,req.body.email,req.body.password);
 
     for(let i = 0; i < arrayOfUsers.length - 1; i++){
         if(arrayOfUsers[i].userID == newUser.userID){
@@ -89,5 +83,17 @@ usersRouter.delete('/User/:userID',(req,res)=> {
 
 
 });
+usersRouter.get('/User/Posts/:userID',(req,res)=> {
 
+    let tempPosts: Post[] = [];
+
+    for(let i = 0; i < arrayOfPosts.length; i++){
+
+        if(arrayOfPosts[i].userID == req.body.userID) {
+            tempPosts.push(arrayOfPosts[i]);
+        }
+    }
+    res.send(tempPosts);
+
+});
 export {usersRouter};

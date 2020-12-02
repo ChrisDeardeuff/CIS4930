@@ -7,6 +7,14 @@ class User{
     public _eAddr:string = "";
     private _password:string = "";
 
+    constructor(userID:string, name:string, lname:string, eaddr:string, password:string) {
+        this._userID=userID;
+        this._name=name;
+        this._lname=lname;
+        this._eAddr = eaddr;
+        this._password=password;
+
+    }
 
     get userID(): string {
         return this._userID;

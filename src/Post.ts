@@ -19,3 +19,8 @@ class Post{
     }
 
 }
+// @ts-ignore
+export let arrayOfPosts: Post[] = [];
+
+
+export {Post};
