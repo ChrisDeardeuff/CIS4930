@@ -7,10 +7,12 @@ import { usersRouter } from './routes/userRouter';
 import {postRouter} from "./routes/postRouter";
 import {categoryRouter} from "./routes/categoryRouter";
 import {postCategoryRouter} from "./routes/postCategoryRouter";
+import cookieParser from "cookie-parser";
 
 let app = express();
 
 app.use(bodyParser.urlencoded({ extended: false}));
+app.use(cookieParser());
 
 app.use(usersRouter);
 app.use(postRouter);

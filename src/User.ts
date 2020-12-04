@@ -57,5 +57,5 @@ class User{
     }
 
 }
-export let arrayOfUsers: User[];
+export let arrayOfUsers: User[] = [];
 export {User};

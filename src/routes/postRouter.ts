@@ -1,6 +1,8 @@
 import express from 'express';
 import {Post,arrayOfPosts} from '../Post';
 import path from "path";
+import jwt from "jsonwebtoken";
+import {User} from "../User";
 
 const postRouter = express.Router();
 
@@ -29,10 +31,19 @@ postRouter.post('/Posts',(req,res)=>{
     let incomingToken = req.headers;
     var authorized;
 
-    if(authorized){
-        //get userID from web token??????
-        var userID:string = "";
-        arrayOfPosts.push(new Post(String(arrayOfPosts.length),new Date().getDate(),req.body.title,req.body.content,userID,req.body.headerImage,new Date()));
+    if(!req.cookies.loggedIn || jwt.verify(req.cookies.loggedIn,'1234567890')){
+        let decoded:object | string = jwt.verify(req.cookies.loggedIn, '1234567890');
+        let user: User;
+
+        if (typeof decoded === "string") {
+            user = JSON.parse(decoded);
+        }else{
+            res.status(401).send("User not Authorized")
+            return;
+        }
+
+
+        arrayOfPosts.push(new Post(String(arrayOfPosts.length),new Date().getDate(),req.body.title,req.body.content,user.userID,req.body.headerImage,new Date()));
     }else{
         res.status(401).send("User not Authorized")
     }
@@ -43,9 +54,7 @@ postRouter.patch('/Posts/:postID',(req,res)=> {
     let incomingToken = req.headers;
     var authorized;
 
-    if(authorized){
-        //get userID from web token??????
-        var userID:string = "";
+    if(!req.cookies.loggedIn || jwt.verify(req.cookies.loggedIn,'1234567890')){
 
         for (let i = 0; i < arrayOfPosts.length; i++){
             if(arrayOfPosts[i].postID == req.params.postID){
@@ -60,7 +69,7 @@ postRouter.patch('/Posts/:postID',(req,res)=> {
 
             res.status(404).send("Post not Found");
 
-    }else if(!authorized){
+    }else{
         res.status(401).send("User not Authorized");
     }
 });
@@ -89,7 +98,6 @@ postRouter.delete('/Posts/:postID',(req,res)=> {
     }else if(!authorized){
         res.status(401).send("User not Authorized");
     }
-
 });
 
 export {postRouter};

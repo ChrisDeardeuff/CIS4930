@@ -6,6 +6,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.postRouter = void 0;
 const express_1 = __importDefault(require("express"));
 const Post_1 = require("../Post");
+const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const postRouter = express_1.default.Router();
 exports.postRouter = postRouter;
 Post_1.arrayOfPosts.push(new Post_1.Post("1", new Date().setTime(230020), "Test Post1", "JUST A TEST", "kristoff", "", new Date()));
@@ -26,10 +27,17 @@ postRouter.get("/Posts/:postID", (req, res) => {
 postRouter.post('/Posts', (req, res) => {
     let incomingToken = req.headers;
     var authorized;
-    if (authorized) {
-        //get userID from web token??????
-        var userID = "";
-        Post_1.arrayOfPosts.push(new Post_1.Post(String(Post_1.arrayOfPosts.length), new Date().getDate(), req.body.title, req.body.content, userID, req.body.headerImage, new Date()));
+    if (!req.cookies.loggedIn || jsonwebtoken_1.default.verify(req.cookies.loggedIn, '1234567890')) {
+        let decoded = jsonwebtoken_1.default.verify(req.cookies.loggedIn, '1234567890');
+        let user;
+        if (typeof decoded === "string") {
+            user = JSON.parse(decoded);
+        }
+        else {
+            res.status(401).send("User not Authorized");
+            return;
+        }
+        Post_1.arrayOfPosts.push(new Post_1.Post(String(Post_1.arrayOfPosts.length), new Date().getDate(), req.body.title, req.body.content, user.userID, req.body.headerImage, new Date()));
     }
     else {
         res.status(401).send("User not Authorized");
@@ -38,9 +46,7 @@ postRouter.post('/Posts', (req, res) => {
 postRouter.patch('/Posts/:postID', (req, res) => {
     let incomingToken = req.headers;
     var authorized;
-    if (authorized) {
-        //get userID from web token??????
-        var userID = "";
+    if (!req.cookies.loggedIn || jsonwebtoken_1.default.verify(req.cookies.loggedIn, '1234567890')) {
         for (let i = 0; i < Post_1.arrayOfPosts.length; i++) {
             if (Post_1.arrayOfPosts[i].postID == req.params.postID) {
                 Post_1.arrayOfPosts[i].headerImage = req.body.headerImage;
@@ -51,7 +57,7 @@ postRouter.patch('/Posts/:postID', (req, res) => {
         }
         res.status(404).send("Post not Found");
     }
-    else if (!authorized) {
+    else {
         res.status(401).send("User not Authorized");
     }
 });
