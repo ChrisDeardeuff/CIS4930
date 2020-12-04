@@ -8,6 +8,7 @@ const express_1 = __importDefault(require("express"));
 const User_1 = require("../User");
 const Post_1 = require("../Post");
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
+const email_validator_1 = __importDefault(require("email-validator"));
 User_1.arrayOfUsers.push(new User_1.User("kristoff", "Chris", "Deardeuff", "example@example", "pass"));
 const usersRouter = express_1.default.Router();
 exports.usersRouter = usersRouter;
@@ -22,11 +23,14 @@ usersRouter.get("/User/:userID", (req, res) => {
             return;
         }
     }
-    res.status(404);
-    res.send("User not Found!");
+    res.json('{"Status”: 404, “Message”: “User Does not Exist"}');
 });
 usersRouter.post('/Users', (req, res) => {
-    let newUser = new User_1.User(req.body.userID, req.body.firstName, req.body.lastName, req.body.emailAddress, req.body.password);
+    let newUser = new User_1.User(req.body.userId, req.body.firstName, req.body.lastName, req.body.emailAddress, req.body.password);
+    if (!email_validator_1.default.validate(newUser.eAddr)) {
+        res.json('{"Status”: 409, “Message”: “Email not valid"}');
+        return;
+    }
     for (let i = 0; i < User_1.arrayOfUsers.length; i++) {
         if (User_1.arrayOfUsers[i].userID == newUser.userID) {
             res.json('{"Status”: 409, “Message”: “User Already Exists"}');
@@ -45,9 +49,8 @@ usersRouter.patch('/User/:userID', (req, res) => {
                 User_1.arrayOfUsers[i].lname = req.body.lastName;
                 User_1.arrayOfUsers[i].eAddr = req.body.email;
                 User_1.arrayOfUsers[i].password = req.body.password;
-                res.sendStatus(201);
-                res.json(User_1.arrayOfUsers[i]);
-                break;
+                res.json(User_1.arrayOfUsers[i]).sendStatus(201);
+                return;
             }
         }
         res.json('{"Status”: 404, “Message”: “User Not Found"}');
@@ -71,8 +74,9 @@ usersRouter.get("/User/:userID/:password", (req, res) => {
     for (let i = 0; i < User_1.arrayOfUsers.length; i++) {
         let user = User_1.arrayOfUsers[i];
         if (user._userID == req.params.userID && user.password == req.params.password) {
-            let myToken = jsonwebtoken_1.default.sign(user, '1234567890');
+            let myToken = jsonwebtoken_1.default.sign({ user, id: user._userID }, '1234567890');
             res.cookie('loggedIn', myToken);
+            return;
         }
     }
     res.json('{"Status”: 401, “Message”: “Unauthorized User"}');

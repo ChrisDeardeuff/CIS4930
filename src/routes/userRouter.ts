@@ -1,8 +1,8 @@
 import express from 'express';
 import {User, arrayOfUsers} from '../User';
 import {arrayOfPosts, Post} from "../Post";
-import cookieParser from "cookie-parser";
 import jwt from 'jsonwebtoken';
+import emailValidator from 'email-validator'
 
 arrayOfUsers.push(new User("kristoff","Chris", "Deardeuff","example@example","pass"));
 
@@ -24,14 +24,18 @@ usersRouter.get("/User/:userID",(req,res)=>{
             return;
         }
     }
-    res.status(404);
-    res.send("User not Found!");
+    res.json('{"Status”: 404, “Message”: “User Does not Exist"}');
 
 });
 
 usersRouter.post('/Users',(req,res)=>{
 
-    let newUser = new User(req.body.userID,req.body.firstName,req.body.lastName,req.body.emailAddress,req.body.password);
+    let newUser = new User(req.body.userId,req.body.firstName,req.body.lastName,req.body.emailAddress,req.body.password);
+
+    if(!emailValidator.validate(newUser.eAddr)){
+        res.json('{"Status”: 409, “Message”: “Email not valid"}');
+        return;
+    }
 
     for(let i = 0; i < arrayOfUsers.length; i++){
         if(arrayOfUsers[i].userID == newUser.userID){
@@ -39,6 +43,7 @@ usersRouter.post('/Users',(req,res)=>{
             res.json('{"Status”: 409, “Message”: “User Already Exists"}');
             return;
         }
+
     }
         arrayOfUsers.push(newUser);
         res.json(newUser);
@@ -55,10 +60,8 @@ usersRouter.patch('/User/:userID',(req,res)=> {
                 arrayOfUsers[i].eAddr = req.body.email;
                 arrayOfUsers[i].password = req.body.password;
 
-                res.sendStatus(201);
-                res.json(arrayOfUsers[i]);
-
-                break;
+                res.json(arrayOfUsers[i]).sendStatus(201);
+                return;
             }
         }
         res.json('{"Status”: 404, “Message”: “User Not Found"}');
@@ -88,8 +91,10 @@ usersRouter.get("/User/:userID/:password",(req,res)=>{
 
         let user:User = arrayOfUsers[i];
         if(user._userID == req.params.userID && user.password == req.params.password){
-            let myToken = jwt.sign(user,'1234567890');
+
+            let myToken = jwt.sign({user, id:user._userID},'1234567890',);
             res.cookie('loggedIn',myToken);
+            return;
         }
     }
     res.json('{"Status”: 401, “Message”: “Unauthorized User"}');

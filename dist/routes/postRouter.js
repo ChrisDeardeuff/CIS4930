@@ -22,62 +22,48 @@ postRouter.get("/Posts/:postID", (req, res) => {
             res.json(Post_1.arrayOfPosts[i]).status(200);
         }
     }
-    res.status(404).send("Post Not Found");
+    res.json('{"Status”: 404, “Message”: “Post Not Found!"}');
 });
 postRouter.post('/Posts', (req, res) => {
-    let incomingToken = req.headers;
-    var authorized;
     if (!req.cookies.loggedIn || jsonwebtoken_1.default.verify(req.cookies.loggedIn, '1234567890')) {
-        let decoded = jsonwebtoken_1.default.verify(req.cookies.loggedIn, '1234567890');
-        let user;
-        if (typeof decoded === "string") {
-            user = JSON.parse(decoded);
-        }
-        else {
-            res.status(401).send("User not Authorized");
-            return;
-        }
-        Post_1.arrayOfPosts.push(new Post_1.Post(String(Post_1.arrayOfPosts.length), new Date().getDate(), req.body.title, req.body.content, user.userID, req.body.headerImage, new Date()));
+        let userID = req.cookies.loggedIn.id;
+        Post_1.arrayOfPosts.push(new Post_1.Post(String(Post_1.arrayOfPosts.length), new Date().getDate(), req.body.title, req.body.content, userID, req.body.headerImage, new Date()));
     }
     else {
-        res.status(401).send("User not Authorized");
+        res.json('{"Status”: 401, “Message”: “User not authorized!"}');
     }
 });
 postRouter.patch('/Posts/:postID', (req, res) => {
-    let incomingToken = req.headers;
-    var authorized;
     if (!req.cookies.loggedIn || jsonwebtoken_1.default.verify(req.cookies.loggedIn, '1234567890')) {
         for (let i = 0; i < Post_1.arrayOfPosts.length; i++) {
             if (Post_1.arrayOfPosts[i].postID == req.params.postID) {
                 Post_1.arrayOfPosts[i].headerImage = req.body.headerImage;
                 Post_1.arrayOfPosts[i].content = req.body.content;
-                res.status(200).send("Post updated");
+                res.json('{"Status”: 22, “Message”: “Post updated!"}');
                 return;
             }
         }
-        res.status(404).send("Post not Found");
+        res.json('{"Status”: 404, “Message”: “Post Not Found!"}');
     }
     else {
-        res.status(401).send("User not Authorized");
+        res.json('{"Status”: 401, “Message”: “User Not Authorized!"}');
     }
 });
 postRouter.delete('/Posts/:postID', (req, res) => {
-    let incomingToken = req.headers;
-    var authorized;
-    if (authorized) {
+    if (!req.cookies.loggedIn || jsonwebtoken_1.default.verify(req.cookies.loggedIn, '1234567890')) {
         //get userID from web token??????
-        var userID = "";
+        let userID = req.cookies.loggedIn.id;
         for (let i = 0; i < Post_1.arrayOfPosts.length; i++) {
-            if (Post_1.arrayOfPosts[i].postID == req.body.postID) {
+            if (Post_1.arrayOfPosts[i].postID == req.body.postID && Post_1.arrayOfPosts[i].userID == userID) {
                 Post_1.arrayOfPosts.splice(i, i);
-                res.status(240).send("Post removed");
+                res.json('{"Status”: 240, “Message”: “Post Removed!"}');
                 return;
             }
         }
-        res.status(404).send("Post not Found");
+        res.json('{"Status”: 404, “Message”: “Post Not Found!"}');
     }
-    else if (!authorized) {
-        res.status(401).send("User not Authorized");
+    else {
+        res.json('{"Status”: 401, “Message”: “User Not Authorized!"}');
     }
 });
 //# sourceMappingURL=postRouter.js.map

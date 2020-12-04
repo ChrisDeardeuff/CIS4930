@@ -7,21 +7,20 @@ exports.categoryRouter = void 0;
 const express_1 = __importDefault(require("express"));
 const Post_1 = require("../Post");
 const Category_1 = require("../Category");
+const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const categoryRouter = express_1.default.Router();
 exports.categoryRouter = categoryRouter;
 categoryRouter.get('/Categories', (req, res) => {
     res.json(Category_1.arrayOfCategories).status(200);
 });
 categoryRouter.post('/Categories', (req, res) => {
-    let incomingToken = req.headers;
-    var authorized;
-    if (authorized) {
+    if (!req.cookies.loggedIn || jsonwebtoken_1.default.verify(req.cookies.loggedIn, '1234567890')) {
         //get userID from web token??????
-        var userID = "";
+        let userID = req.cookies.loggedIn._userID;
         Category_1.arrayOfCategories.push(new Category_1.Category(String(Category_1.arrayOfCategories.length), req.body.categoryName, req.body.categoryDescription));
     }
-    else if (!authorized) {
-        res.status(401).send("User not Authorized");
+    else {
+        res.json('{"Status”: 401, “Message”: “Unauthorized!"}');
     }
 });
 categoryRouter.get('/Categories/:categoryID', (req, res) => {
@@ -31,27 +30,42 @@ categoryRouter.get('/Categories/:categoryID', (req, res) => {
             return;
         }
     }
-    res.status(404).send("Category not found");
+    res.json('{"Status”: 404, “Message”: “Category Not Found!"}');
 });
 categoryRouter.patch('/Categories/:categoryID', (req, res) => {
     let incomingToken = req.headers;
     var authorized;
-    if (authorized) {
+    if (!req.cookies.loggedIn || jsonwebtoken_1.default.verify(req.cookies.loggedIn, '1234567890')) {
         //get userID from web token??????
-        var userID = "";
+        let userID = req.cookies.loggedIn._userID;
         for (let i = 0; i < Post_1.arrayOfPosts.length; i++) {
             if (Category_1.arrayOfCategories[i].categoryID == req.params.categoryID) {
                 Category_1.arrayOfCategories[i].description = req.body.description;
                 Category_1.arrayOfCategories[i].name = req.body.name;
-                res.status(200).send("Category updated");
+                res.json('{"Status”: 200, “Message”: “Category updated!"}');
                 return;
             }
         }
     }
-    else if (!authorized) {
-        res.status(401).send("User not Authorized");
+    else {
+        res.json('{"Status”: 401, “Message”: “Unauthorized!"}');
     }
 });
 categoryRouter.delete('/Categories/:categoryID', (req, res) => {
+    if (!req.cookies.loggedIn || jsonwebtoken_1.default.verify(req.cookies.loggedIn, '1234567890')) {
+        //get userID from web token??????
+        let userID = req.cookies.loggedIn._userID;
+        for (let i = 0; i < Post_1.arrayOfPosts.length; i++) {
+            if (Category_1.arrayOfCategories[i].categoryID == req.params.categoryID) {
+                Category_1.arrayOfCategories.splice(i, i);
+                res.json('{"Status”: 200, “Message”: “Category removed!"}');
+                return;
+            }
+        }
+        res.json('{"Status”: 404, “Message”: “Post Not Found!"}');
+    }
+    else {
+        res.json('{"Status”: 401, “Message”: “Unauthorized!"}');
+    }
 });
 //# sourceMappingURL=categoryRouter.js.map

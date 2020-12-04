@@ -3,10 +3,10 @@ import {Category} from "./Category";
 
 class PostCategory{
 
-    public categoryID:number;
-    public postID:number;
+    public categoryID:string;
+    public postID:string;
 
-    constructor(categoryID:number,postID:number) {
+    constructor(categoryID:string,postID:string) {
         this.categoryID = categoryID;
         this.postID = postID;
     }
