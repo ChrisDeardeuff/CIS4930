@@ -1,4 +1,6 @@
 // @ts-ignore
+import {PostCategory} from "./PostCategory";
+
 class Comment{
 
     public commentID:number;
@@ -17,3 +19,5 @@ class Comment{
     }
 
 }
+export{Comment};
+export let arrayOfComments: Comment[] = [];

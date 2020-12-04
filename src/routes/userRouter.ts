@@ -1,17 +1,16 @@
 import express from 'express';
-import {User} from '../User';
-import path from "path";
+import {User,arrayOfUsers} from '../User';
 import {arrayOfPosts, Post} from "../Post";
 
-let arrayOfUsers = new Array();
 
 arrayOfUsers.push(new User("kristoff","Chris", "Deardeuff","example@example","pass"));
+
+
 const usersRouter = express.Router();
 
 usersRouter.get('/Users',(req,res)=>{
 
     res.json(arrayOfUsers);
-    res.sendFile(path.join(process.cwd(),'public/views/userForm.html'))
     res.end();
 });
 
@@ -31,22 +30,31 @@ usersRouter.get("/User/:userID",(req,res)=>{
 
 usersRouter.post('/Users',(req,res)=>{
 
-    let newUser = new User(req.body.userID,req.body.name,req.body.lastName,req.body.email,req.body.password);
+    let newUser = new User(req.body.userID,req.body.firstName,req.body.lastName,req.body.emailAddress,req.body.password);
 
     for(let i = 0; i < arrayOfUsers.length - 1; i++){
         if(arrayOfUsers[i].userID == newUser.userID){
-            res.send("User Already exists!");
-            res.sendStatus(409);
+            res.sendStatus(409).send("USER ALREADY EXISTS!");
             return;
         }
     }
         arrayOfUsers.push(newUser);
-        res.json(newUser);
-        res.sendStatus(201);
-
+        res.sendStatus(201).json(newUser);
 
 });
+usersRouter.get('/Users/Posts/:userID',(req,res)=> {
 
+    let tempPosts: Post[] = [];
+
+    for(let i = 0; i < arrayOfPosts.length; i++){
+
+        if(arrayOfPosts[i].userID == req.params.userID) {
+            tempPosts.push(arrayOfPosts[i]);
+        }
+    }
+    res.json(tempPosts);
+    res.send("Found posts");
+});
 usersRouter.patch('/User/:userID',(req,res)=> {
     for(let i = 0; i < arrayOfUsers.length; i++){
         if(arrayOfUsers[i].userID == req.params.userID) {
@@ -73,7 +81,7 @@ usersRouter.delete('/User/:userID',(req,res)=> {
     for(let i = 0; i < arrayOfUsers.length; i++){
         if(arrayOfUsers[i].userID == req.body.userID) {
 
-            arrayOfUsers[i] = null;
+            arrayOfUsers.splice(i,i);
             res.send("User removed!");
             break;
         }
@@ -81,19 +89,6 @@ usersRouter.delete('/User/:userID',(req,res)=> {
     res.send("User Not Found!");
     res.sendStatus(404);
 
-
-});
-usersRouter.get('/User/Posts/:userID',(req,res)=> {
-
-    let tempPosts: Post[] = [];
-
-    for(let i = 0; i < arrayOfPosts.length; i++){
-
-        if(arrayOfPosts[i].userID == req.body.userID) {
-            tempPosts.push(arrayOfPosts[i]);
-        }
-    }
-    res.send(tempPosts);
 
 });
 export {usersRouter};

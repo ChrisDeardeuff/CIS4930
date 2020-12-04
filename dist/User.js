@@ -1,13 +1,18 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.User = void 0;
+exports.User = exports.arrayOfUsers = void 0;
 class User {
-    constructor() {
+    constructor(userID, name, lname, eaddr, password) {
         this._userID = "";
         this._name = "";
         this._lname = "";
         this._eAddr = "";
         this._password = "";
+        this._userID = userID;
+        this._name = name;
+        this._lname = lname;
+        this._eAddr = eaddr;
+        this._password = password;
     }
     get userID() {
         return this._userID;

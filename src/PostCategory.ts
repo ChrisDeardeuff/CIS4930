@@ -1,4 +1,7 @@
-class postCategory{
+import exp from "constants";
+import {Category} from "./Category";
+
+class PostCategory{
 
     public categoryID:number;
     public postID:number;
@@ -10,3 +13,5 @@ class postCategory{
 
 
 }
+export let arrayOfPostCategories: PostCategory[] = [];
+export{PostCategory};

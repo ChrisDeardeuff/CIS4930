@@ -6,11 +6,17 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const http_1 = __importDefault(require("http"));
 const express_1 = __importDefault(require("express"));
 const body_parser_1 = __importDefault(require("body-parser"));
-const userRouter_1 = require("./routes/userRouter");
 const path_1 = __importDefault(require("path"));
+const userRouter_1 = require("./routes/userRouter");
+const postRouter_1 = require("./routes/postRouter");
+const categoryRouter_1 = require("./routes/categoryRouter");
+const postCategoryRouter_1 = require("./routes/postCategoryRouter");
 let app = express_1.default();
 app.use(body_parser_1.default.urlencoded({ extended: false }));
 app.use(userRouter_1.usersRouter);
+app.use(postRouter_1.postRouter);
+app.use(categoryRouter_1.categoryRouter);
+app.use(postCategoryRouter_1.postCategoryRouter);
 app.use('/', (req, res, next) => {
     console.log(process.cwd());
     res.sendFile(path_1.default.join(process.cwd(), 'public/views/index.html'));
