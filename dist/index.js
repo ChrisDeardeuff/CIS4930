@@ -12,13 +12,16 @@ const postRouter_1 = require("./routes/postRouter");
 const categoryRouter_1 = require("./routes/categoryRouter");
 const postCategoryRouter_1 = require("./routes/postCategoryRouter");
 const cookie_parser_1 = __importDefault(require("cookie-parser"));
+const commentRouter_1 = require("./routes/commentRouter");
 let app = express_1.default();
 app.use(body_parser_1.default.urlencoded({ extended: false }));
 app.use(cookie_parser_1.default());
+app.use(body_parser_1.default.json());
 app.use(userRouter_1.usersRouter);
 app.use(postRouter_1.postRouter);
 app.use(categoryRouter_1.categoryRouter);
 app.use(postCategoryRouter_1.postCategoryRouter);
+app.use(commentRouter_1.commentRouter);
 app.use('/', (req, res, next) => {
     console.log(process.cwd());
     res.sendFile(path_1.default.join(process.cwd(), 'public/views/index.html'));

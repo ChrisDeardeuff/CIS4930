@@ -8,7 +8,7 @@ import jwt from "jsonwebtoken";
 
 const postCategoryRouter = express.Router();
 
-postCategoryRouter.get('/PostCategories/:postID',(req, res)=>{
+postCategoryRouter.get('/PostCategory/:postID',(req, res)=>{
     let tempArray:PostCategory[] = []
 
     for (let i = 0; i < arrayOfPostCategories.length; i++) {
@@ -19,7 +19,7 @@ postCategoryRouter.get('/PostCategories/:postID',(req, res)=>{
     res.json(tempArray);
 });
 
-postCategoryRouter.get('/PostCategories/Posts/:categoryID',(req, res)=>{
+postCategoryRouter.get('/PostCategory/Posts/:categoryID',(req, res)=>{
     let tempArray:PostCategory[] = [];
     let tempArray2:Post[] = [];
 
@@ -39,42 +39,66 @@ postCategoryRouter.get('/PostCategories/Posts/:categoryID',(req, res)=>{
     res.json(tempArray2);
 });
 
-postCategoryRouter.post('/PostCategories/:postID/:categoryID',(req, res)=>{
-    if(!req.cookies.loggedIn || jwt.verify(req.cookies.loggedIn,'1234567890')){
+postCategoryRouter.post('/PostCategory/:postID/:categoryID',(req, res)=>{
+    if(req.cookies.loggedIn){
+        try{
+            let token = jwt.verify(req.cookies.loggedIn,'1234567890')
+            var decoded = jwt.verify(req.cookies.loggedIn, '1234567890');
 
-        let newPostCategory:PostCategory = new PostCategory(req.params.categoryID,req.params.postID);
-        for (let i = 0; i < arrayOfCategories.length; i++) {
-            if(arrayOfCategories[i].categoryID == req.params.categoryID){
-                for (let j = 0; j < arrayOfPosts.length; j++) {
-                    if(arrayOfPosts[i].postID == req.params.postID){
-                        arrayOfPostCategories.push(newPostCategory);
-                        return;
+            // @ts-ignore
+            let userID = decoded.id;
+
+            let newPostCategory:PostCategory = new PostCategory(req.params.categoryID,req.params.postID);
+            for (let i = 0; i < arrayOfCategories.length; i++) {
+                if(arrayOfCategories[i].categoryID == req.params.categoryID){
+                    for (let j = 0; j < arrayOfPosts.length; j++) {
+                        if(arrayOfPosts[i].postID == req.params.postID){
+                            arrayOfPostCategories.push(newPostCategory);
+                            return;
+                        }
                     }
                 }
             }
+            res.json('{"Status”: 404, “Message”: “Post or Category ID not found!"}');
+
+        }catch {
+            res.json('{"Status”: 401, “Message”: “User not authorized!"}');
         }
-        res.json('{"Status”: 404, “Message”: “Post or Category ID not found!"}');
+
+
     }else{
         res.json('{"Status”: 401, “Message”: “Unauthorized!"}');
     }
 });
 
-postCategoryRouter.delete('/PostCategories/:postID/:categoryID',(req, res)=>{
+postCategoryRouter.delete('/PostCategory/:postID/:categoryID',(req, res)=>{
 
-    if(!req.cookies.loggedIn || jwt.verify(req.cookies.loggedIn,'1234567890')){
+    if(req.cookies.loggedIn){
+        try{
+            let token = jwt.verify(req.cookies.loggedIn,'1234567890')
+            var decoded = jwt.verify(req.cookies.loggedIn, '1234567890');
 
-        let newPostCategory:PostCategory = new PostCategory(req.params.categoryID,req.params.postID);
-        for (let i = 0; i < arrayOfCategories.length; i++) {
-            if(arrayOfCategories[i].categoryID == req.params.categoryID){
-                for (let j = 0; j < arrayOfPosts.length; j++) {
-                    if(arrayOfPosts[i].postID == req.params.postID){
-                        arrayOfPostCategories.splice(i,i);
-                        return;
+            // @ts-ignore
+            let userID = decoded.id;
+
+            let newPostCategory:PostCategory = new PostCategory(req.params.categoryID,req.params.postID);
+            for (let i = 0; i < arrayOfCategories.length; i++) {
+                if(arrayOfCategories[i].categoryID == req.params.categoryID){
+                    for (let j = 0; j < arrayOfPosts.length; j++) {
+                        if(arrayOfPosts[i].postID == req.params.postID){
+                            arrayOfPostCategories.splice(i,i);
+                            res.json('{"Status”: 200, “Message”: “Post deleted!"}');
+                        }
                     }
                 }
             }
+            res.json('{"Status”: 404, “Message”: “Post or Category ID not found!"}');
+
+        }catch {
+            res.json('{"Status”: 401, “Message”: “User not authorized!"}');
         }
-        res.json('{"Status”: 404, “Message”: “Post or Category ID not found!"}');
+
+
     }else{
         res.json('{"Status”: 401, “Message”: “Unauthorized!"}');
     }

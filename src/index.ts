@@ -8,16 +8,20 @@ import {postRouter} from "./routes/postRouter";
 import {categoryRouter} from "./routes/categoryRouter";
 import {postCategoryRouter} from "./routes/postCategoryRouter";
 import cookieParser from "cookie-parser";
+import {commentRouter} from "./routes/commentRouter";
 
 let app = express();
 
 app.use(bodyParser.urlencoded({ extended: false}));
 app.use(cookieParser());
+app.use(bodyParser.json());
 
 app.use(usersRouter);
 app.use(postRouter);
 app.use(categoryRouter);
 app.use(postCategoryRouter);
+app.use(commentRouter);
+
 app.use('/',(req,res,next)=>
 {
     console.log(process.cwd());

@@ -3,6 +3,9 @@ import {User, arrayOfUsers} from '../User';
 import {arrayOfPosts, Post} from "../Post";
 import jwt from 'jsonwebtoken';
 import emailValidator from 'email-validator'
+let bodyParser = require('body-parser');
+let jsonParser = bodyParser.json()
+let urlencodedParser = bodyParser.urlencoded({ extended: false })
 
 arrayOfUsers.push(new User("kristoff","Chris", "Deardeuff","example@example","pass"));
 
@@ -15,12 +18,10 @@ usersRouter.get('/Users',(req,res)=>{
     res.end();
 });
 
-usersRouter.get("/User/:userID",(req,res)=>{
+usersRouter.get("/Users/:userID",(req,res)=>{
     for(let i = 0; i < arrayOfUsers.length; i++){
         if(arrayOfUsers[i].userID == req.params.userID) {
-
             res.json(arrayOfUsers[i]);
-
             return;
         }
     }
@@ -28,9 +29,9 @@ usersRouter.get("/User/:userID",(req,res)=>{
 
 });
 
-usersRouter.post('/Users',(req,res)=>{
+usersRouter.post('/Users',jsonParser,(req,res)=>{
 
-    let newUser = new User(req.body.userId,req.body.firstName,req.body.lastName,req.body.emailAddress,req.body.password);
+    let newUser:User = new User(req.body.userId,req.body.firstName,req.body.lastName,req.body.emailAddress,req.body.password);
 
     if(!emailValidator.validate(newUser.eAddr)){
         res.json('{"Status”: 409, “Message”: “Email not valid"}');
@@ -49,43 +50,62 @@ usersRouter.post('/Users',(req,res)=>{
         res.json(newUser);
 
 });
-usersRouter.patch('/User/:userID',(req,res)=> {
+usersRouter.patch('/Users/:userID',jsonParser,(req,res)=> {
 
-    if(!req.cookies.loggedIn || jwt.verify(req.cookies.loggedIn,'1234567890')){
-        for(let i = 0; i < arrayOfUsers.length; i++){
-            if(arrayOfUsers[i].userID == req.params.userID) {
-                arrayOfUsers[i].userID = req.body.userID;
-                arrayOfUsers[i].name = req.body.name;
-                arrayOfUsers[i].lname = req.body.lastName;
-                arrayOfUsers[i].eAddr = req.body.email;
-                arrayOfUsers[i].password = req.body.password;
+    if(req.cookies.loggedIn){
+        try{
+            let token = jwt.verify(req.cookies.loggedIn,'1234567890')
 
-                res.json(arrayOfUsers[i]).sendStatus(201);
+            if(!emailValidator.validate(req.body.emailAddress)){
+                res.json('{"Status”: 409, “Message”: “Email not valid"}');
                 return;
             }
+            for(let i = 0; i < arrayOfUsers.length; i++){
+                if(arrayOfUsers[i].userID == req.params.userID) {
+
+                    arrayOfUsers[i].name = req.body.name;
+                    arrayOfUsers[i].lname = req.body.lastName;
+                    arrayOfUsers[i].eAddr = req.body.email;
+                    arrayOfUsers[i].password = req.body.password;
+
+                    res.json(arrayOfUsers[i]).sendStatus(201);
+                    return;
+                }
+            }
+            res.json('{"Status”: 404, “Message”: “User Not Found"}');
+        }catch {
+            res.json('{"Status”: 401, “Message”: “User not authorized!"}');
         }
-        res.json('{"Status”: 404, “Message”: “User Not Found"}');
+
     }else{
         res.json('{"Status”: 401, “Message”: “Unauthorized User"}');
     }
 
 });
 
-usersRouter.delete('/User/:userID',(req,res)=> {
-    for(let i = 0; i < arrayOfUsers.length; i++){
-        if(arrayOfUsers[i].userID == req.body.userID) {
+usersRouter.delete('/Users/:userID',(req,res)=> {
+    if(req.cookies.loggedIn){
+        try {
+            let token = jwt.verify(req.cookies.loggedIn, '1234567890')
+            for (let i = 0; i < arrayOfUsers.length; i++) {
 
-            arrayOfUsers.splice(i,i);
-            res.send("User removed!");
-            break;
+                if (arrayOfUsers[i].userID == req.params.userID) {
+
+                    arrayOfUsers.splice(i, i);
+                    res.json('{"Status”: 200, “Message”: “User Deleted"}');
+                    break;
+                }
+            }
+            res.json('{"Status”: 404, “Message”: “User Not Found"}');
+        }catch{
+            res.json('{"Status”: 401, “Message”: “Unauthorized User"}');
         }
+    }else{
+        res.json('{"Status”: 401, “Message”: “Unauthorized User"}');
     }
-    res.send("User Not Found!");
-    res.sendStatus(404);
-
 
 });
-usersRouter.get("/User/:userID/:password",(req,res)=>{
+usersRouter.get("/Users/:userID/:password",(req,res)=>{
 
     for (let i = 0; i < arrayOfUsers.length ; i++) {
 
@@ -94,7 +114,8 @@ usersRouter.get("/User/:userID/:password",(req,res)=>{
 
             let myToken = jwt.sign({user, id:user._userID},'1234567890',);
             res.cookie('loggedIn',myToken);
-            return;
+
+            res.json('{"Status”: 200, “Message”: “Authorized User"}');
         }
     }
     res.json('{"Status”: 401, “Message”: “Unauthorized User"}');
